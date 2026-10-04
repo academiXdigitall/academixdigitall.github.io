@@ -1,13 +1,6 @@
 import { useState, useEffect } from 'react';
-
-interface ArchiveItem {
-  id: string;
-  title: string;
-  category: string;
-  mediaType: string;
-  description: string;
-  link: string;
-}
+import { defaultSiteSettings, loadSiteContent, subscribeToSiteContent, type SiteContent } from './lib/siteContent';
+import { supabase } from './lib/supabase';
 
 const toProjectUrl = (link: string) => {
   if (!link || link === '#') return '';
@@ -21,29 +14,45 @@ const toProjectUrl = (link: string) => {
 };
 
 export default function App() {
-  const [archives, setArchives] = useState<ArchiveItem[]>(() => {
-    const saved = localStorage.getItem('academix_shared_db');
-    return saved ? JSON.parse(saved) : [
-      {
-        id: '1',
-        title: 'Nepal Disaster Archive',
-        category: 'Disaster History',
-        mediaType: 'Documentaries & Timelines',
-        description: "Documenting Nepal's historical disaster events through structured visual timelines and editorial archives.",
-        link: '#'
-      }
-    ];
-  });
+  const [siteContent, setSiteContent] = useState<SiteContent>(() => ({
+    projects: [],
+    settings: defaultSiteSettings,
+  }));
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
-  const [settings] = useState(() => {
-    const saved = localStorage.getItem('academix_settings');
-    return saved ? JSON.parse(saved) : {
-      siteName: 'AcademiX',
-      logoHighlight: 'Digital',
-      subtitle: 'Technology ventures',
-      footerText: '© 2026 AcademiX Digital. All rights reserved.'
+  useEffect(() => {
+    if (!supabase) {
+      setLoadError('The shared site database is not configured yet.');
+      setIsLoading(false);
+      return;
+    }
+
+    let active = true;
+    loadSiteContent()
+      .then(content => {
+        if (active) setSiteContent(content);
+      })
+      .catch(error => {
+        if (active) setLoadError(`Could not load the shared site content: ${error instanceof Error ? error.message : String(error)}`);
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    const channel = subscribeToSiteContent(content => {
+      if (active) setSiteContent(content);
+    }, message => {
+      if (active) setLoadError(message);
+    });
+
+    return () => {
+      active = false;
+      if (channel && supabase) void supabase.removeChannel(channel);
     };
-  });
+  }, []);
+
+  const { projects: archives, settings } = siteContent;
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('All media types');
@@ -79,6 +88,8 @@ export default function App() {
       </header>
 
       <main className="max-w-5xl mx-auto w-full px-6 py-12 flex-grow">
+        {isLoading && <p role="status" className="mb-6 text-sm text-[#78716C]">Loading shared site content…</p>}
+        {loadError && <p role="alert" className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{loadError}</p>}
         <div className="flex flex-col sm:flex-row gap-4 mb-12">
           <input 
             type="text"
