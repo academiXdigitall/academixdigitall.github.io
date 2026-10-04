@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build artifacts (dist, out, build)
+dist/
+build/
+*.js
+*.js.map
+*.d.ts
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.code-workspace
+
+# Environment and Secrets
+.env
+.env.local
+*.log   
