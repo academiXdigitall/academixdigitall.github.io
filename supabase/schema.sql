@@ -2,16 +2,69 @@ create table if not exists public.site_content (
   id boolean primary key default true check (id),
   projects jsonb not null default '[]'::jsonb,
   settings jsonb not null default '{}'::jsonb,
+  pages jsonb not null default '{}'::jsonb,
   updated_at timestamptz not null default now()
 );
 
-insert into public.site_content (id, projects, settings)
+alter table public.site_content
+  add column if not exists pages jsonb not null default '{}'::jsonb;
+
+insert into public.site_content (id, projects, settings, pages)
 values (
   true,
   '[{"id":"1","title":"Nepal Disaster Archive","category":"Disaster History","mediaType":"Documentaries & Timelines","description":"Documenting Nepal''s historical disaster events through structured visual timelines and editorial archives.","link":"#"}]'::jsonb,
-  '{"siteName":"AcademiX","logoHighlight":"Digital","subtitle":"Technology ventures","footerText":"© 2026 AcademiX Digital. All rights reserved."}'::jsonb
+  '{"siteName":"AcademiX","logoHighlight":"Digital","subtitle":"Technology ventures","footerText":"© 2026 AcademiX Digital. All rights reserved."}'::jsonb,
+  '{}'::jsonb
 )
 on conflict (id) do nothing;
+
+update public.site_content
+set pages = '{
+  "about": {
+    "eyebrow": "Institutional Overview",
+    "title": "About AcademiX Digital",
+    "description": "An independent digital venture and public-interest technology initiative, dedicated to scalable web architectures and digital world.",
+    "sections": [
+      {"id":"about-mission","title":"","body":"AcademiX Digital was founded to bridge the critical gap between rigorous technical engineering and open civic infrastructure. Operating at the intersection of full-stack software development and public-interest technology, our venture focuses on building resilient web systems, transparent compliance registries, and digital history archives.\n\nOur core mission is rooted in regional digital preservation and civic accountability. Whether it is documenting historical timelines or architecting platforms for municipal data analysis, we aim to build tools that empower communities and public institutions.","display":"prose","items":[]},
+      {"id":"about-pillars","title":"","body":"","display":"cards","items":[
+        {"id":"civic-technology","title":"Civic Technology","body":"Building software solutions for municipal reporting, governance performance tracking, and public compliance monitoring.","label":"","link":""},
+        {"id":"public-archives","title":"Public Archives","body":"Documenting regional history and significant public-interest records through structured visual timelines and editorial archives.","label":"","link":""},
+        {"id":"full-stack-dev","title":"Full-Stack Dev","body":"Architecting high-performance, secure, and type-safe web applications using modern TypeScript and robust component paradigms.","label":"","link":""}
+      ]}
+    ]
+  },
+  "ventures": {
+    "eyebrow":"Our ecosystem",
+    "title":"Ventures built for public value",
+    "description":"Independent products and initiatives exploring civic technology, digital preservation, and practical software for organizations.",
+    "sections":[{"id":"venture-list","title":"","body":"","display":"cards","items":[
+      {"id":"nepal-disaster-archive","title":"Nepal Disaster Archive","body":"A public-interest archive documenting Nepal’s historical disaster events through structured records, timelines, and editorial context.","label":"Active","link":""},
+      {"id":"civic-governance-trackers","title":"Civic Governance Trackers","body":"An initiative exploring transparent tools for public reporting, governance performance, and civic accountability.","label":"Planning phase","link":""},
+      {"id":"small-business-operating-systems","title":"Small-Business Operating Systems","body":"Practical digital systems to help small businesses organize workflows and make day-to-day operations easier to manage.","label":"In development","link":""}
+    ]}]
+  },
+  "open-source": {
+    "eyebrow":"Built in the open",
+    "title":"Open Source & Code",
+    "description":"We value reusable tools, clear documentation, and community collaboration. Public repositories and contribution guidance will be listed here as they are released.",
+    "sections":[
+      {"id":"open-source-projects","title":"","body":"","display":"cards","items":[{"id":"public-repositories","title":"Public repositories","body":"Browse the AcademiX Digital public profile for repositories and code updates.","label":"Repository listing coming soon","link":"https://github.com/academiXdigitall"}]},
+      {"id":"open-source-technologies","title":"Technology","body":"Current project work includes modern web technologies such as:","display":"chips","items":[
+        {"id":"react","title":"React","body":"","label":"","link":""},
+        {"id":"typescript","title":"TypeScript","body":"","label":"","link":""},
+        {"id":"nodejs","title":"Node.js","body":"","label":"","link":""}
+      ]},
+      {"id":"contributing","title":"Contributing","body":"When repositories open, each project will include setup instructions, contribution guidelines, and issue-reporting details in its README.","display":"prose","items":[]}
+    ]
+  },
+  "contact": {
+    "eyebrow":"Start a conversation",
+    "title":"Contact & Inquiries",
+    "description":"We welcome conversations about institutional partnerships, media inquiries, and developer collaboration.",
+    "sections":[{"id":"contact-information","title":"","body":"","display":"cards","items":[{"id":"email-social","title":"Email & social","body":"For developer updates and public code, find AcademiX Digital on GitHub.","label":"GitHub: academiXdigitall ↗","link":"https://github.com/academiXdigitall"}]}]
+  }
+}'::jsonb
+where pages = '{}'::jsonb;
 
 create table if not exists public.site_admins (
   user_id uuid primary key references auth.users (id) on delete cascade

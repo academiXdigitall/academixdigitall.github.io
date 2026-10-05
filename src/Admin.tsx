@@ -1,20 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { defaultSiteSettings, loadLegacyBrowserContent, loadSiteContent, saveSiteContent, subscribeToSiteContent, type ArchiveItem, type SiteContent, type SiteSettings } from './lib/siteContent';
+import { defaultPages, defaultSiteSettings, editablePageIds, loadLegacyBrowserContent, loadSiteContent, saveSiteContent, subscribeToSiteContent, type ArchiveItem, type EditablePageId, type EditablePages, type PageItem, type PageSection, type SiteContent, type SiteSettings } from './lib/siteContent';
 import { supabase, supabaseConfigurationError } from './lib/supabase';
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+const pageNames: Record<EditablePageId, string> = {
+  about: 'About',
+  ventures: 'Our Ventures',
+  'open-source': 'Open Source',
+  contact: 'Contact',
+};
+
 export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [contentLoading, setContentLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'projects' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'projects' | 'pages' | 'settings'>('overview');
+  const [selectedPage, setSelectedPage] = useState<EditablePageId>('about');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [archives, setArchives] = useState<ArchiveItem[]>([]);
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
+  const [pages, setPages] = useState<EditablePages>(defaultPages);
   const [legacyContent, setLegacyContent] = useState<SiteContent | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
@@ -93,6 +102,7 @@ export default function Admin() {
         if (!active) return;
         setArchives(content.projects);
         setSettings(content.settings);
+        setPages(content.pages);
         try {
           setLegacyContent(loadLegacyBrowserContent());
         } catch (legacyError) {
@@ -113,6 +123,7 @@ export default function Admin() {
       if (!active) return;
       setArchives(content.projects);
       setSettings(content.settings);
+      setPages(content.pages);
     }, message => {
       if (active) setError(message);
     });
@@ -126,15 +137,17 @@ export default function Admin() {
   const persistContent = async (
     nextArchives: ArchiveItem[] = archives,
     nextSettings: SiteSettings = settings,
+    nextPages: EditablePages = pages,
     successMessage = 'Saved. The shared website is updated.',
   ): Promise<boolean> => {
     setBusy(true);
     setError('');
     setNotice('');
     try {
-      await saveSiteContent({ projects: nextArchives, settings: nextSettings });
+      await saveSiteContent({ projects: nextArchives, settings: nextSettings, pages: nextPages });
       setArchives(nextArchives);
       setSettings(nextSettings);
+      setPages(nextPages);
       setNotice(successMessage);
       return true;
     } catch (saveError) {
@@ -199,9 +212,27 @@ export default function Admin() {
 
   const handleLegacyImport = async () => {
     if (!legacyContent || !window.confirm('Import this browser’s saved projects and branding, replacing the current shared website content?')) return;
-    if (await persistContent(legacyContent.projects, legacyContent.settings, 'This browser’s saved content is now shared with all visitors.')) {
+    if (await persistContent(legacyContent.projects, legacyContent.settings, pages, 'This browser’s saved content is now shared with all visitors.')) {
       setLegacyContent(null);
     }
+  };
+
+  const updateSelectedPage = (update: (page: EditablePages[EditablePageId]) => EditablePages[EditablePageId]) => {
+    setPages(current => ({ ...current, [selectedPage]: update(current[selectedPage]) }));
+  };
+
+  const updatePageSection = (sectionId: string, update: (section: PageSection) => PageSection) => {
+    updateSelectedPage(page => ({
+      ...page,
+      sections: page.sections.map(section => section.id === sectionId ? update(section) : section),
+    }));
+  };
+
+  const updatePageItem = (sectionId: string, itemId: string, update: (item: PageItem) => PageItem) => {
+    updatePageSection(sectionId, section => ({
+      ...section,
+      items: section.items.map(item => item.id === itemId ? update(item) : item),
+    }));
   };
 
   if (authLoading) {
@@ -242,6 +273,7 @@ export default function Admin() {
           <nav className="space-y-2">
             <button onClick={() => setActiveTab('overview')} className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-medium ${activeTab === 'overview' ? 'bg-[#1E2022] text-white' : 'text-[#57534E] hover:bg-[#F0ECE1]'}`}>📊 Overview</button>
             <button onClick={() => setActiveTab('projects')} className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-medium ${activeTab === 'projects' ? 'bg-[#1E2022] text-white' : 'text-[#57534E] hover:bg-[#F0ECE1]'}`}>🗂️ Manage Projects ({archives.length})</button>
+            <button onClick={() => setActiveTab('pages')} className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-medium ${activeTab === 'pages' ? 'bg-[#1E2022] text-white' : 'text-[#57534E] hover:bg-[#F0ECE1]'}`}>📄 Manage Pages (4)</button>
             <button onClick={() => setActiveTab('settings')} className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-medium ${activeTab === 'settings' ? 'bg-[#1E2022] text-white' : 'text-[#57534E] hover:bg-[#F0ECE1]'}`}>⚙️ Site Settings & Branding</button>
           </nav>
         </div>
@@ -260,7 +292,7 @@ export default function Admin() {
           <div className="space-y-6">
             <div>
               <h1 className="serif-title text-3xl font-bold mb-1">Overview</h1>
-              <p className="text-xs text-[#78716C]">Shared site content is stored in Supabase. Total projects: {archives.length}</p>
+              <p className="text-xs text-[#78716C]">Shared site content is stored in Supabase. Total projects: {archives.length}. Editable pages: 4.</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div className="bg-white p-6 rounded-2xl border border-[#E5E0D8]">
@@ -301,7 +333,7 @@ export default function Admin() {
                   ? archives.map(item => item.id === editingProjectId ? project : item)
                   : [project, ...archives];
 
-                if (await persistContent(nextArchives, settings, editingProjectId ? 'Project updated.' : 'Project published.')) {
+                if (await persistContent(nextArchives, settings, pages, editingProjectId ? 'Project updated.' : 'Project published.')) {
                   resetProjectForm();
                 }
               }} className="space-y-4">
@@ -337,12 +369,124 @@ export default function Admin() {
                         setDescription(item.description);
                         setLink(item.link === '#' ? '' : item.link);
                       }} className="text-[#1E2022] font-medium">Edit</button>
-                      <button disabled={busy} onClick={() => { void persistContent(archives.filter(project => project.id !== item.id), settings, 'Project deleted.'); }} className="text-red-600 disabled:opacity-50">Delete</button>
+                      <button disabled={busy} onClick={() => { void persistContent(archives.filter(project => project.id !== item.id), settings, pages, 'Project deleted.'); }} className="text-red-600 disabled:opacity-50">Delete</button>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'pages' && (
+          <div className="space-y-6">
+            <div>
+              <h1 className="serif-title text-3xl font-bold mb-1">Page Content Management</h1>
+              <p className="text-xs text-[#78716C]">Edit the existing content or add sections and content cards. Changes appear on the selected live page after saving.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {editablePageIds.map(pageId => (
+                <button
+                  key={pageId}
+                  type="button"
+                  onClick={() => setSelectedPage(pageId)}
+                  className={`rounded-xl px-4 py-2.5 text-xs font-medium ${selectedPage === pageId ? 'bg-[#1E2022] text-white' : 'border border-[#E5E0D8] bg-white text-[#57534E]'}`}
+                >
+                  {pageNames[pageId]}
+                </button>
+              ))}
+            </div>
+
+            <form onSubmit={async event => {
+              event.preventDefault();
+              await persistContent(archives, settings, pages, `${pageNames[selectedPage]} page saved.`);
+            }} className="space-y-6">
+              <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#E5E0D8] space-y-4">
+                <h2 className="serif-title text-xl font-bold">Page introduction</h2>
+                <label className="block text-xs font-medium text-[#57534E]">
+                  Small heading
+                  <input value={pages[selectedPage].eyebrow} onChange={event => updateSelectedPage(page => ({ ...page, eyebrow: event.target.value }))} className="mt-2 w-full bg-[#FBF9F5] border border-[#E5E0D8] rounded-xl p-3 text-xs outline-none" />
+                </label>
+                <label className="block text-xs font-medium text-[#57534E]">
+                  Page title
+                  <input value={pages[selectedPage].title} onChange={event => updateSelectedPage(page => ({ ...page, title: event.target.value }))} className="mt-2 w-full bg-[#FBF9F5] border border-[#E5E0D8] rounded-xl p-3 text-xs outline-none" />
+                </label>
+                <label className="block text-xs font-medium text-[#57534E]">
+                  Introduction
+                  <textarea value={pages[selectedPage].description} onChange={event => updateSelectedPage(page => ({ ...page, description: event.target.value }))} rows={3} className="mt-2 w-full bg-[#FBF9F5] border border-[#E5E0D8] rounded-xl p-3 text-xs outline-none" />
+                </label>
+              </div>
+
+              {pages[selectedPage].sections.map((section, sectionIndex) => (
+                <section key={section.id} className="bg-white p-6 sm:p-8 rounded-2xl border border-[#E5E0D8] space-y-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <h2 className="serif-title text-xl font-bold">Content section {sectionIndex + 1}</h2>
+                    <button type="button" onClick={() => updateSelectedPage(page => ({ ...page, sections: page.sections.filter(item => item.id !== section.id) }))} className="text-xs font-medium text-red-600">Remove section</button>
+                  </div>
+                  <label className="block text-xs font-medium text-[#57534E]">
+                    Section heading
+                    <input value={section.title} onChange={event => updatePageSection(section.id, current => ({ ...current, title: event.target.value }))} className="mt-2 w-full bg-[#FBF9F5] border border-[#E5E0D8] rounded-xl p-3 text-xs outline-none" />
+                  </label>
+                  <label className="block text-xs font-medium text-[#57534E]">
+                    Layout
+                    <select value={section.display} onChange={event => updatePageSection(section.id, current => ({ ...current, display: event.target.value as PageSection['display'] }))} className="mt-2 w-full bg-[#FBF9F5] border border-[#E5E0D8] rounded-xl p-3 text-xs outline-none">
+                      <option value="prose">Text</option>
+                      <option value="cards">Content cards</option>
+                      <option value="chips">Tags / technology list</option>
+                    </select>
+                  </label>
+                  <label className="block text-xs font-medium text-[#57534E]">
+                    Section text
+                    <textarea value={section.body} onChange={event => updatePageSection(section.id, current => ({ ...current, body: event.target.value }))} rows={4} placeholder="Separate paragraphs with a blank line." className="mt-2 w-full bg-[#FBF9F5] border border-[#E5E0D8] rounded-xl p-3 text-xs outline-none" />
+                  </label>
+
+                  <div className="space-y-4">
+                    {section.items.map((item, itemIndex) => (
+                      <div key={item.id} className="rounded-xl border border-[#E5E0D8] bg-[#FBF9F5] p-4 space-y-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-xs font-semibold text-[#57534E]">Content item {itemIndex + 1}</p>
+                          <button type="button" onClick={() => updatePageSection(section.id, current => ({ ...current, items: current.items.filter(entry => entry.id !== item.id) }))} className="text-xs text-red-600">Remove</button>
+                        </div>
+                        <input aria-label="Item title" value={item.title} onChange={event => updatePageItem(section.id, item.id, current => ({ ...current, title: event.target.value }))} placeholder="Title" className="w-full bg-white border border-[#E5E0D8] rounded-xl p-3 text-xs outline-none" />
+                        <textarea aria-label="Item description" value={item.body} onChange={event => updatePageItem(section.id, item.id, current => ({ ...current, body: event.target.value }))} placeholder="Description" rows={3} className="w-full bg-white border border-[#E5E0D8] rounded-xl p-3 text-xs outline-none" />
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <input aria-label="Item label or status" value={item.label} onChange={event => updatePageItem(section.id, item.id, current => ({ ...current, label: event.target.value }))} placeholder="Label or status (optional)" className="w-full bg-white border border-[#E5E0D8] rounded-xl p-3 text-xs outline-none" />
+                          <input aria-label="Item link" value={item.link} onChange={event => updatePageItem(section.id, item.id, current => ({ ...current, link: event.target.value }))} placeholder="Link URL (optional)" className="w-full bg-white border border-[#E5E0D8] rounded-xl p-3 text-xs outline-none" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => updatePageSection(section.id, current => ({
+                      ...current,
+                      display: current.display === 'chips' ? 'chips' : 'cards',
+                      items: [...current.items, { id: crypto.randomUUID(), title: '', body: '', label: '', link: '' }],
+                    }))}
+                    className="rounded-xl border border-[#E5E0D8] px-4 py-2.5 text-xs font-medium text-[#1E2022]"
+                  >
+                    + Add content item
+                  </button>
+                </section>
+              ))}
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => updateSelectedPage(page => ({
+                    ...page,
+                    sections: [...page.sections, { id: crypto.randomUUID(), title: 'New section', body: '', display: 'cards', items: [] }],
+                  }))}
+                  className="rounded-xl border border-[#E5E0D8] bg-white px-5 py-3 text-xs font-medium text-[#1E2022]"
+                >
+                  + Add content section
+                </button>
+                <button type="submit" disabled={busy || contentLoading} className="rounded-xl bg-[#1E2022] px-6 py-3 text-xs font-medium text-white disabled:opacity-50">
+                  Save {pageNames[selectedPage]} Page
+                </button>
+                <a href={`/${selectedPage}.html`} target="_blank" rel="noreferrer" className="rounded-xl bg-[#F0ECE1] px-5 py-3 text-xs font-medium text-[#1E2022]">Preview live page ↗</a>
+              </div>
+            </form>
           </div>
         )}
 
@@ -352,7 +496,7 @@ export default function Admin() {
               <h2 className="serif-title text-xl font-bold mb-4">Site Branding Customization</h2>
               <form onSubmit={async event => {
                 event.preventDefault();
-                await persistContent(archives, settings, 'Branding settings saved.');
+                await persistContent(archives, settings, pages, 'Branding settings saved.');
               }} className="space-y-4">
                 <input type="text" value={settings.siteName} onChange={event => setSettings({ ...settings, siteName: event.target.value })} className="w-full bg-[#FBF9F5] border border-[#E5E0D8] rounded-xl p-3 text-xs outline-none" placeholder="Site Name" />
                 <input type="text" value={settings.logoHighlight} onChange={event => setSettings({ ...settings, logoHighlight: event.target.value })} className="w-full bg-[#FBF9F5] border border-[#E5E0D8] rounded-xl p-3 text-xs outline-none" placeholder="Logo Highlight" />

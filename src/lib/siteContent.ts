@@ -17,9 +17,36 @@ export interface SiteSettings {
   footerText: string;
 }
 
+export interface PageItem {
+  id: string;
+  title: string;
+  body: string;
+  label: string;
+  link: string;
+}
+
+export interface PageSection {
+  id: string;
+  title: string;
+  body: string;
+  display: 'prose' | 'cards' | 'chips';
+  items: PageItem[];
+}
+
+export interface PageContent {
+  eyebrow: string;
+  title: string;
+  description: string;
+  sections: PageSection[];
+}
+
+export type EditablePageId = 'about' | 'ventures' | 'open-source' | 'contact';
+export type EditablePages = Record<EditablePageId, PageContent>;
+
 export interface SiteContent {
   projects: ArchiveItem[];
   settings: SiteSettings;
+  pages: EditablePages;
 }
 
 export const defaultSiteSettings: SiteSettings = {
@@ -27,6 +54,104 @@ export const defaultSiteSettings: SiteSettings = {
   logoHighlight: 'Digital',
   subtitle: 'Technology ventures',
   footerText: '© 2026 AcademiX Digital. All rights reserved.',
+};
+
+export const editablePageIds: EditablePageId[] = ['about', 'ventures', 'open-source', 'contact'];
+
+export const defaultPages: EditablePages = {
+  about: {
+    eyebrow: 'Institutional Overview',
+    title: 'About AcademiX Digital',
+    description: 'An independent digital venture and public-interest technology initiative, dedicated to scalable web architectures and digital world.',
+    sections: [
+      {
+        id: 'about-mission',
+        title: '',
+        body: 'AcademiX Digital was founded to bridge the critical gap between rigorous technical engineering and open civic infrastructure. Operating at the intersection of full-stack software development and public-interest technology, our venture focuses on building resilient web systems, transparent compliance registries, and digital history archives.\n\nOur core mission is rooted in regional digital preservation and civic accountability. Whether it is documenting historical timelines or architecting platforms for municipal data analysis, we aim to build tools that empower communities and public institutions.',
+        display: 'prose',
+        items: [],
+      },
+      {
+        id: 'about-pillars',
+        title: '',
+        body: '',
+        display: 'cards',
+        items: [
+          { id: 'civic-technology', title: 'Civic Technology', body: 'Building software solutions for municipal reporting, governance performance tracking, and public compliance monitoring.', label: '', link: '' },
+          { id: 'public-archives', title: 'Public Archives', body: 'Documenting regional history and significant public-interest records through structured visual timelines and editorial archives.', label: '', link: '' },
+          { id: 'full-stack-dev', title: 'Full-Stack Dev', body: 'Architecting high-performance, secure, and type-safe web applications using modern TypeScript and robust component paradigms.', label: '', link: '' },
+        ],
+      },
+    ],
+  },
+  ventures: {
+    eyebrow: 'Our ecosystem',
+    title: 'Ventures built for public value',
+    description: 'Independent products and initiatives exploring civic technology, digital preservation, and practical software for organizations.',
+    sections: [
+      {
+        id: 'venture-list',
+        title: '',
+        body: '',
+        display: 'cards',
+        items: [
+          { id: 'nepal-disaster-archive', title: 'Nepal Disaster Archive', body: 'A public-interest archive documenting Nepal’s historical disaster events through structured records, timelines, and editorial context.', label: 'Active', link: '' },
+          { id: 'civic-governance-trackers', title: 'Civic Governance Trackers', body: 'An initiative exploring transparent tools for public reporting, governance performance, and civic accountability.', label: 'Planning phase', link: '' },
+          { id: 'small-business-operating-systems', title: 'Small-Business Operating Systems', body: 'Practical digital systems to help small businesses organize workflows and make day-to-day operations easier to manage.', label: 'In development', link: '' },
+        ],
+      },
+    ],
+  },
+  'open-source': {
+    eyebrow: 'Built in the open',
+    title: 'Open Source & Code',
+    description: 'We value reusable tools, clear documentation, and community collaboration. Public repositories and contribution guidance will be listed here as they are released.',
+    sections: [
+      {
+        id: 'open-source-projects',
+        title: '',
+        body: '',
+        display: 'cards',
+        items: [
+          { id: 'public-repositories', title: 'Public repositories', body: 'Browse the AcademiX Digital public profile for repositories and code updates.', label: 'Repository listing coming soon', link: 'https://github.com/academiXdigitall' },
+        ],
+      },
+      {
+        id: 'open-source-technologies',
+        title: 'Technology',
+        body: 'Current project work includes modern web technologies such as:',
+        display: 'chips',
+        items: [
+          { id: 'react', title: 'React', body: '', label: '', link: '' },
+          { id: 'typescript', title: 'TypeScript', body: '', label: '', link: '' },
+          { id: 'nodejs', title: 'Node.js', body: '', label: '', link: '' },
+        ],
+      },
+      {
+        id: 'contributing',
+        title: 'Contributing',
+        body: 'When repositories open, each project will include setup instructions, contribution guidelines, and issue-reporting details in its README.',
+        display: 'prose',
+        items: [],
+      },
+    ],
+  },
+  contact: {
+    eyebrow: 'Start a conversation',
+    title: 'Contact & Inquiries',
+    description: 'We welcome conversations about institutional partnerships, media inquiries, and developer collaboration.',
+    sections: [
+      {
+        id: 'contact-information',
+        title: '',
+        body: '',
+        display: 'cards',
+        items: [
+          { id: 'email-social', title: 'Email & social', body: 'For developer updates and public code, find AcademiX Digital on GitHub.', label: 'GitHub: academiXdigitall ↗', link: 'https://github.com/academiXdigitall' },
+        ],
+      },
+    ],
+  },
 };
 
 function parseProjectList(value: unknown): ArchiveItem[] {
@@ -70,6 +195,69 @@ function parseSiteSettings(value: unknown): SiteSettings {
   };
 }
 
+function parsePages(value: unknown): EditablePages {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('The site content contains invalid page content.');
+  }
+
+  const pages = value as Record<string, unknown>;
+  const parsed = { ...defaultPages };
+  for (const pageId of editablePageIds) {
+    const pageValue = pages[pageId];
+    if (pageValue === undefined || pageValue === null) continue;
+    if (typeof pageValue !== 'object' || Array.isArray(pageValue)) {
+      throw new Error(`The ${pageId} page content is invalid.`);
+    }
+
+    const page = pageValue as Record<string, unknown>;
+    if (typeof page.eyebrow !== 'string' || typeof page.title !== 'string' || typeof page.description !== 'string' || !Array.isArray(page.sections)) {
+      throw new Error(`The ${pageId} page is missing required content fields.`);
+    }
+
+    const sections = page.sections.map((sectionValue: unknown) => {
+      if (!sectionValue || typeof sectionValue !== 'object' || Array.isArray(sectionValue)) {
+        throw new Error(`The ${pageId} page contains an invalid section.`);
+      }
+      const section = sectionValue as Record<string, unknown>;
+      if (typeof section.id !== 'string' || typeof section.title !== 'string' || typeof section.body !== 'string' ||
+          !['prose', 'cards', 'chips'].includes(String(section.display)) || !Array.isArray(section.items)) {
+        throw new Error(`The ${pageId} page contains a section with invalid fields.`);
+      }
+      const items = section.items.map((itemValue: unknown) => {
+        if (!itemValue || typeof itemValue !== 'object' || Array.isArray(itemValue)) {
+          throw new Error(`The ${pageId} page contains an invalid content item.`);
+        }
+        const item = itemValue as Record<string, unknown>;
+        if (['id', 'title', 'body', 'label', 'link'].some(field => typeof item[field] !== 'string')) {
+          throw new Error(`The ${pageId} page contains a content item with missing fields.`);
+        }
+        return {
+          id: item.id as string,
+          title: item.title as string,
+          body: item.body as string,
+          label: item.label as string,
+          link: item.link as string,
+        };
+      });
+      return {
+        id: section.id as string,
+        title: section.title as string,
+        body: section.body as string,
+        display: section.display as PageSection['display'],
+        items,
+      };
+    });
+
+    parsed[pageId] = {
+      eyebrow: page.eyebrow,
+      title: page.title,
+      description: page.description,
+      sections,
+    };
+  }
+  return parsed;
+}
+
 function parseContent(value: unknown): SiteContent {
   if (!value || typeof value !== 'object') {
     throw new Error('Supabase returned invalid site content.');
@@ -79,6 +267,7 @@ function parseContent(value: unknown): SiteContent {
   return {
     projects: parseProjectList(row.projects),
     settings: parseSiteSettings(row.settings),
+    pages: parsePages(row.pages ?? {}),
   };
 }
 
@@ -89,7 +278,7 @@ export async function loadSiteContent(): Promise<SiteContent> {
 
   const { data, error } = await supabase
     .from('site_content')
-    .select('projects, settings')
+    .select('projects, settings, pages')
     .eq('id', true)
     .single();
 
@@ -107,6 +296,7 @@ export async function saveSiteContent(content: SiteContent): Promise<void> {
     .update({
       projects: content.projects,
       settings: content.settings,
+      pages: content.pages,
       updated_at: new Date().toISOString(),
     })
     .eq('id', true)
@@ -154,5 +344,5 @@ export function loadLegacyBrowserContent(): SiteContent | null {
     key => settings[key as keyof SiteSettings] !== defaultSiteSettings[key as keyof SiteSettings],
   );
 
-  return projects.length > 0 || hasNonDefaultSettings ? { projects, settings } : null;
+  return projects.length > 0 || hasNonDefaultSettings ? { projects, settings, pages: defaultPages } : null;
 }

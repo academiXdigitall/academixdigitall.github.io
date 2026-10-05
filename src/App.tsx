@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { defaultSiteSettings, loadSiteContent, subscribeToSiteContent, type SiteContent } from './lib/siteContent';
+import { defaultPages, defaultSiteSettings, loadSiteContent, subscribeToSiteContent, type SiteContent } from './lib/siteContent';
 import { supabase } from './lib/supabase';
 
 const toProjectUrl = (link: string) => {
@@ -17,6 +17,7 @@ export default function App() {
   const [siteContent, setSiteContent] = useState<SiteContent>(() => ({
     projects: [],
     settings: defaultSiteSettings,
+    pages: defaultPages,
   }));
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
