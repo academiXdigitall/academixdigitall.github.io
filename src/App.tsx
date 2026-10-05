@@ -80,10 +80,10 @@ export default function App() {
         </a>
         <nav aria-label="Main navigation" className="flex flex-wrap items-center gap-x-6 gap-y-3 text-xs font-medium text-[#78716C]">
           <a href="/index.html" aria-current="page" className="font-semibold text-[#1E2022] underline underline-offset-4">Home</a>
-          <a href="/about.html" className="hover:text-[#1E2022] transition-colors">About</a>
-          <a href="/ventures.html" className="hover:text-[#1E2022] transition-colors">Our Ventures</a>
-          <a href="/open-source.html" className="hover:text-[#1E2022] transition-colors">Open Source</a>
-          <a href="/contact.html" className="hover:text-[#1E2022] transition-colors">Contact</a>
+          <a href="/about/" className="hover:text-[#1E2022] transition-colors">About</a>
+          <a href="/ventures/" className="hover:text-[#1E2022] transition-colors">Our Ventures</a>
+          <a href="/open-source/" className="hover:text-[#1E2022] transition-colors">Open Source</a>
+          <a href="/contact/" className="hover:text-[#1E2022] transition-colors">Contact</a>
           <a href="https://github.com/academiXdigitall" target="_blank" rel="noopener noreferrer" className="hover:text-[#1E2022] transition-colors">GitHub ↗</a>
         </nav>
       </header>
@@ -170,10 +170,10 @@ export default function App() {
         <p>{settings.footerText}</p>
         <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-3">
           <a className="hover:text-[#1E2022]" href="/index.html">Home</a>
-          <a className="hover:text-[#1E2022]" href="/about.html">About</a>
-          <a className="hover:text-[#1E2022]" href="/ventures.html">Our Ventures</a>
-          <a className="hover:text-[#1E2022]" href="/open-source.html">Open Source</a>
-          <a className="hover:text-[#1E2022]" href="/contact.html">Contact</a>
+          <a className="hover:text-[#1E2022]" href="/about/">About</a>
+          <a className="hover:text-[#1E2022]" href="/ventures/">Our Ventures</a>
+          <a className="hover:text-[#1E2022]" href="/open-source/">Open Source</a>
+          <a className="hover:text-[#1E2022]" href="/contact/">Contact</a>
           <a className="hover:text-[#1E2022]" href="https://github.com/academiXdigitall" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
         </nav>
       </footer>

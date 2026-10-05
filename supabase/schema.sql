@@ -25,11 +25,10 @@ set pages = '{
     "title": "About AcademiX Digital",
     "description": "An independent digital venture and public-interest technology initiative, dedicated to scalable web architectures and digital world.",
     "sections": [
-      {"id":"about-mission","title":"","body":"AcademiX Digital was founded to bridge the critical gap between rigorous technical engineering and open civic infrastructure. Operating at the intersection of full-stack software development and public-interest technology, our venture focuses on building resilient web systems, transparent compliance registries, and digital history archives.\n\nOur core mission is rooted in regional digital preservation and civic accountability. Whether it is documenting historical timelines or architecting platforms for municipal data analysis, we aim to build tools that empower communities and public institutions.","display":"prose","items":[]},
+      {"id":"about-mission","title":"","body":"AcademiX Digital was founded to bridge the critical gap between rigorous engineering and open civic infrastructure. Operating at the intersection of software development and public-interest technology, our venture focuses on building resilient web systems, transparent compliance registries, and digital history archives.\n\nOur core mission is rooted in regional digital preservation and civic accountability. Whether it is documenting historical timelines or architecting platforms for municipal data analysis, we aim to build tools that empower communities and public institutions.","display":"prose","items":[]},
       {"id":"about-pillars","title":"","body":"","display":"cards","items":[
         {"id":"civic-technology","title":"Civic Technology","body":"Building software solutions for municipal reporting, governance performance tracking, and public compliance monitoring.","label":"","link":""},
-        {"id":"public-archives","title":"Public Archives","body":"Documenting regional history and significant public-interest records through structured visual timelines and editorial archives.","label":"","link":""},
-        {"id":"full-stack-dev","title":"Full-Stack Dev","body":"Architecting high-performance, secure, and type-safe web applications using modern TypeScript and robust component paradigms.","label":"","link":""}
+        {"id":"public-archives","title":"Public Archives","body":"Documenting regional history and significant public-interest records through structured visual timelines and editorial archives.","label":"","link":""}
       ]}
     ]
   },
@@ -65,6 +64,59 @@ set pages = '{
   }
 }'::jsonb
 where pages = '{}'::jsonb;
+
+update public.site_content AS content
+set pages = jsonb_set(
+  content.pages,
+  '{about,sections}',
+  (
+    select jsonb_agg(
+      jsonb_set(
+        section.value,
+        '{items}',
+        coalesce(
+          (
+            select jsonb_agg(item.value order by item.ordinality)
+            from jsonb_array_elements(coalesce(section.value->'items', '[]'::jsonb))
+              with ordinality as item(value, ordinality)
+            where item.value->>'id' <> 'full-stack-dev'
+          ),
+          '[]'::jsonb
+        )
+      )
+      || case
+        when section.value->>'id' = 'about-mission' then jsonb_build_object(
+          'body',
+          regexp_replace(
+            section.value->>'body',
+            'full-stack[[:space:]]+software development',
+            'software development',
+            'gi'
+          )
+        )
+        else '{}'::jsonb
+      end
+      order by section.ordinality
+    )
+    from jsonb_array_elements(content.pages #> '{about,sections}')
+      with ordinality as section(value, ordinality)
+  ),
+  true
+)
+where jsonb_typeof(content.pages #> '{about,sections}') = 'array'
+  and (
+    exists (
+      select 1
+      from jsonb_array_elements(content.pages #> '{about,sections}') as section(value)
+      cross join lateral jsonb_array_elements(coalesce(section.value->'items', '[]'::jsonb)) as item(value)
+      where item.value->>'id' = 'full-stack-dev'
+    )
+    or exists (
+      select 1
+      from jsonb_array_elements(content.pages #> '{about,sections}') as section(value)
+      where section.value->>'body' ~* 'full-stack[[:space:]]+software development'
+    )
+  );
 
 create table if not exists public.site_admins (
   user_id uuid primary key references auth.users (id) on delete cascade

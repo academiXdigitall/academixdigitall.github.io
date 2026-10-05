@@ -67,7 +67,7 @@ export const defaultPages: EditablePages = {
       {
         id: 'about-mission',
         title: '',
-        body: 'AcademiX Digital was founded to bridge the critical gap between rigorous technical engineering and open civic infrastructure. Operating at the intersection of full-stack software development and public-interest technology, our venture focuses on building resilient web systems, transparent compliance registries, and digital history archives.\n\nOur core mission is rooted in regional digital preservation and civic accountability. Whether it is documenting historical timelines or architecting platforms for municipal data analysis, we aim to build tools that empower communities and public institutions.',
+        body: 'AcademiX Digital was founded to bridge the critical gap between rigorous engineering and open civic infrastructure. Operating at the intersection of software development and public-interest technology, our venture focuses on building resilient web systems, transparent compliance registries, and digital history archives.\n\nOur core mission is rooted in regional digital preservation and civic accountability. Whether it is documenting historical timelines or architecting platforms for municipal data analysis, we aim to build tools that empower communities and public institutions.',
         display: 'prose',
         items: [],
       },
@@ -79,7 +79,6 @@ export const defaultPages: EditablePages = {
         items: [
           { id: 'civic-technology', title: 'Civic Technology', body: 'Building software solutions for municipal reporting, governance performance tracking, and public compliance monitoring.', label: '', link: '' },
           { id: 'public-archives', title: 'Public Archives', body: 'Documenting regional history and significant public-interest records through structured visual timelines and editorial archives.', label: '', link: '' },
-          { id: 'full-stack-dev', title: 'Full-Stack Dev', body: 'Architecting high-performance, secure, and type-safe web applications using modern TypeScript and robust component paradigms.', label: '', link: '' },
         ],
       },
     ],

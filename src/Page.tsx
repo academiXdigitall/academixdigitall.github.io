@@ -85,7 +85,7 @@ export default function Page({ pageId }: { pageId: EditablePageId }) {
           {(['about', 'ventures', 'open-source', 'contact'] as const).map(id => (
             <a
               key={id}
-              href={`/${id}.html`}
+              href={`/${id}/`}
               aria-current={pageId === id ? 'page' : undefined}
               className={pageId === id ? 'font-semibold text-[#1E2022] underline underline-offset-4' : 'hover:text-[#1E2022] transition-colors'}
             >
@@ -151,7 +151,7 @@ export default function Page({ pageId }: { pageId: EditablePageId }) {
         <p>{settings.footerText}</p>
         <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-3">
           <a className="hover:text-[#1E2022]" href="/index.html">Home</a>
-          {(['about', 'ventures', 'open-source', 'contact'] as const).map(id => <a key={id} className="hover:text-[#1E2022]" href={`/${id}.html`}>{pageLabels[id]}</a>)}
+          {(['about', 'ventures', 'open-source', 'contact'] as const).map(id => <a key={id} className="hover:text-[#1E2022]" href={`/${id}/`}>{pageLabels[id]}</a>)}
           <a className="hover:text-[#1E2022]" href="https://github.com/academiXdigitall" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
         </nav>
       </footer>

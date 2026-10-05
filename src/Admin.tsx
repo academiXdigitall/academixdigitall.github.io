@@ -484,7 +484,7 @@ export default function Admin() {
                 <button type="submit" disabled={busy || contentLoading} className="rounded-xl bg-[#1E2022] px-6 py-3 text-xs font-medium text-white disabled:opacity-50">
                   Save {pageNames[selectedPage]} Page
                 </button>
-                <a href={`/${selectedPage}.html`} target="_blank" rel="noreferrer" className="rounded-xl bg-[#F0ECE1] px-5 py-3 text-xs font-medium text-[#1E2022]">Preview live page ↗</a>
+                <a href={`/${selectedPage}/`} target="_blank" rel="noreferrer" className="rounded-xl bg-[#F0ECE1] px-5 py-3 text-xs font-medium text-[#1E2022]">Preview live page ↗</a>
               </div>
             </form>
           </div>
