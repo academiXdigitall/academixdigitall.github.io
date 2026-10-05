@@ -73,7 +73,7 @@ export default function Page({ pageId }: { pageId: EditablePageId }) {
   return (
     <div className="min-h-screen bg-[#FBF9F5] text-[#1E2022] flex flex-col">
       <header className="max-w-5xl mx-auto w-full px-6 py-7 flex flex-wrap items-center justify-between gap-5 border-b border-[#EBE6DC]">
-        <a href="/index.html" className="flex items-center gap-3">
+        <a href="/" className="flex items-center gap-3">
           <img src="/academix-logo.png" alt={`${settings.siteName} ${settings.logoHighlight} logo`} className="h-12 w-12 rounded-xl object-contain" />
           <span>
             <strong className="serif-title text-xl">{settings.siteName} <span className="font-normal text-[#685C43]">{settings.logoHighlight}</span></strong>
@@ -81,7 +81,7 @@ export default function Page({ pageId }: { pageId: EditablePageId }) {
           </span>
         </a>
         <nav aria-label="Main navigation" className="flex flex-wrap items-center gap-x-6 gap-y-3 text-xs font-medium text-[#78716C]">
-          <a href="/index.html" className="hover:text-[#1E2022] transition-colors">Home</a>
+          <a href="/" className="hover:text-[#1E2022] transition-colors">Home</a>
           {(['about', 'ventures', 'open-source', 'contact'] as const).map(id => (
             <a
               key={id}
@@ -150,7 +150,7 @@ export default function Page({ pageId }: { pageId: EditablePageId }) {
       <footer className="max-w-5xl mx-auto w-full px-6 py-7 border-t border-[#EBE6DC] flex flex-col gap-5 text-xs text-[#78716C] sm:flex-row sm:items-center sm:justify-between">
         <p>{settings.footerText}</p>
         <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-3">
-          <a className="hover:text-[#1E2022]" href="/index.html">Home</a>
+          <a className="hover:text-[#1E2022]" href="/">Home</a>
           {(['about', 'ventures', 'open-source', 'contact'] as const).map(id => <a key={id} className="hover:text-[#1E2022]" href={`/${id}/`}>{pageLabels[id]}</a>)}
           <a className="hover:text-[#1E2022]" href="https://github.com/academiXdigitall" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
         </nav>

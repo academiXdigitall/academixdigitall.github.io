@@ -254,7 +254,7 @@ export default function Admin() {
             <input type="email" placeholder="Admin email" value={email} onChange={event => setEmail(event.target.value)} className="w-full bg-[#FBF9F5] border border-[#E5E0D8] rounded-xl p-3 text-sm outline-none" required autoComplete="username" />
             <input type="password" placeholder="Password" value={password} onChange={event => setPassword(event.target.value)} className="w-full bg-[#FBF9F5] border border-[#E5E0D8] rounded-xl p-3 text-sm outline-none" required autoComplete="current-password" />
             <button type="submit" disabled={!supabase || busy} className="w-full bg-[#1E2022] text-white p-3 rounded-xl text-sm font-medium disabled:opacity-50">{busy ? 'Signing in…' : 'Access Dashboard'}</button>
-            <div className="text-center pt-2"><a href="/index.html" className="text-xs text-[#78716C] underline">← Back to Public Website</a></div>
+            <div className="text-center pt-2"><a href="/" className="text-xs text-[#78716C] underline">← Back to Public Website</a></div>
           </form>
         </div>
       </div>
@@ -278,7 +278,7 @@ export default function Admin() {
           </nav>
         </div>
         <div className="pt-6 border-t border-[#EBE6DC] space-y-3">
-          <a href="/index.html" target="_blank" rel="noreferrer" className="block text-xs text-center text-[#78716C] underline">View Live Website ↗</a>
+          <a href="/" target="_blank" rel="noreferrer" className="block text-xs text-center text-[#78716C] underline">View Live Website ↗</a>
           <button onClick={() => { void handleSignOut(); }} className="w-full bg-red-50 text-red-600 p-2 rounded-xl text-xs font-medium">Sign Out</button>
         </div>
       </aside>

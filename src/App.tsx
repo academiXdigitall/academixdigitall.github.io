@@ -71,7 +71,7 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col justify-between">
       <header className="max-w-5xl mx-auto w-full px-6 py-7 flex flex-wrap items-center justify-between gap-5 border-b border-[#EBE6DC]">
-        <a href="/index.html" className="flex items-center gap-3">
+        <a href="/" className="flex items-center gap-3">
           <img src="/academix-logo.png" alt={`${settings.siteName} ${settings.logoHighlight} logo`} className="h-12 w-12 rounded-xl object-contain" />
           <span>
             <strong className="serif-title text-xl">{settings.siteName} <span className="font-normal text-[#685C43]">{settings.logoHighlight}</span></strong>
@@ -79,7 +79,7 @@ export default function App() {
           </span>
         </a>
         <nav aria-label="Main navigation" className="flex flex-wrap items-center gap-x-6 gap-y-3 text-xs font-medium text-[#78716C]">
-          <a href="/index.html" aria-current="page" className="font-semibold text-[#1E2022] underline underline-offset-4">Home</a>
+          <a href="/" aria-current="page" className="font-semibold text-[#1E2022] underline underline-offset-4">Home</a>
           <a href="/about/" className="hover:text-[#1E2022] transition-colors">About</a>
           <a href="/ventures/" className="hover:text-[#1E2022] transition-colors">Our Ventures</a>
           <a href="/open-source/" className="hover:text-[#1E2022] transition-colors">Open Source</a>
@@ -169,7 +169,7 @@ export default function App() {
       <footer className="max-w-5xl mx-auto w-full px-6 py-7 border-t border-[#EBE6DC] flex flex-col gap-5 text-xs text-[#78716C] sm:flex-row sm:items-center sm:justify-between">
         <p>{settings.footerText}</p>
         <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-3">
-          <a className="hover:text-[#1E2022]" href="/index.html">Home</a>
+          <a className="hover:text-[#1E2022]" href="/">Home</a>
           <a className="hover:text-[#1E2022]" href="/about/">About</a>
           <a className="hover:text-[#1E2022]" href="/ventures/">Our Ventures</a>
           <a className="hover:text-[#1E2022]" href="/open-source/">Open Source</a>
